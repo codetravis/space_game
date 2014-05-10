@@ -63,14 +63,36 @@ function selectShip() {
 // Make the ship move
 function moveTo(pointer) {
     if (this.is_selected === true) {
-        this.x = pointer.x;
-        this.y = pointer.y;
-        this.is_selected = false;
-        moveLeft.destroy();
-        moveRight.destroy();
-        moveUp.destroy();
-        moveDown.destroy();
+        legal_test = isLegal(this.x, this.y, pointer.x, pointer.y);
+        if(legal_test["legal_move"] === true){
+            this.x = legal_test["x"];
+            this.y = legal_test["y"];
+            this.is_selected = false;
+            clearMoves();
+        }
     }
+}
+
+function isLegal(from_x, from_y, to_x, to_y) {
+    if (Math.abs(from_x - to_x) > 96 || Math.abs(from_y - to_y) > 96) {
+        return { "legal_move": false, "x": from_x, "y": from_y };
+    }
+    else if (to_y > (from_y + 32) && Math.abs(to_x - from_x) < 32) {
+        // down
+        return {"legal_move": true, "x": moveDown.x, "y": moveDown.y };
+    }
+    else
+    {
+        // stay where you are
+        return { "legal_move": true, "x": from_x, "y": from_y };
+    }
+}
+
+function clearMoves() {
+    moveLeft.destroy();
+    moveRight.destroy();
+    moveUp.destroy();
+    moveDown.destroy();
 }
 
 function spawnShips() {
