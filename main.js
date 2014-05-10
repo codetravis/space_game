@@ -130,8 +130,8 @@ function spawnShips() {
 
     bad_ships = game.add.group();
     for (var i = 2; i < BOARD_COLS - 2; i++) {
-         var bad_ship = bad_ships.create(i * SHIP_SIZE,
-             (BOARD_ROWS-2) * SHIP_SIZE, "escort_frigate");
+         var bad_ship = bad_ships.create(i * SHIP_SIZE - 32,
+             (BOARD_ROWS-2) * SHIP_SIZE - 32, "escort_frigate");
          bad_ship.inputEnabled = true;
          bad_ship.anchor.set(0.5);
          bad_ship.events.onInputDown.add(selectShip, bad_ship);
