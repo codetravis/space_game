@@ -19,6 +19,8 @@ function preload() {
 var BOARD_COLS = 10;
 var BOARD_ROWS = 10;
 var SHIP_SIZE = 64;
+var TURN = "PLAYER1";
+var MOVELOCK = false;
 
 function create() {
     	// Fuction called after 'preload' to setup the game    
@@ -27,38 +29,72 @@ function create() {
 }
     
 function update() {
+    if (TURN == "PLAYER1") {
+        // let player 1 move the good ships
+        while (waitingShips(good_ships)) {
+            good_ships.forEach(function(ship) {
+                if (ship.moved == "MOVING")
+                {
+                    MOVELOCK = true;
+                }
+                else if (ship.moved == "WAITING" && MOVELOCK === false){
+                    selectShip(ship);
+                }
+            });
+        }
+    }
+    else if (TURN == "PLAYER2") {
+        // let player 2 (or A.I.?) move the bad ships
+    }
+}
 
+function waitingShips(fleet) {
+    var waiting_ships = false;
+    fleet.forEach(function(ship) {
+        if (ship.moved == "WAITING") {
+            waiting_ships = true;
+        }
+    });
+    return waiting_ships;
 }
 
 
 // select the ship to move
-function selectShip() {
-    this.is_selected = true;
-    // draw possible moves
-    moveLeft = game.add.sprite(this.x - 64, this.y, 'move_tile');
-    moveLeft.anchor.set(0.5);
-    moveRight = game.add.sprite(this.x + 64, this.y, 'move_tile');
-    moveRight.anchor.set(0.5);
-    moveUp = game.add.sprite(this.x, this.y - 64, 'move_tile');
-    moveUp.anchor.set(0.5);
-    moveDown = game.add.sprite(this.x, this.y + 64, 'move_tile');
-    moveDown.anchor.set(0.5);
+function selectShip(ship) {
+    ship.is_selected = true;
+    if (ship.moved == "WAITING") {
+        // draw possible moves
+        ship.moveLeft = game.add.sprite(ship.x - 64, ship.y, 'move_tile');
+        ship.moveLeft.anchor.set(0.5);
+        ship.moveRight = game.add.sprite(ship.x + 64, ship.y, 'move_tile');
+        ship.moveRight.anchor.set(0.5);
+        ship.moveUp = game.add.sprite(ship.x, ship.y - 64, 'move_tile');
+        ship.moveUp.anchor.set(0.5);
+        ship.moveDown = game.add.sprite(ship.x, ship.y + 64, 'move_tile');
+        ship.moveDown.anchor.set(0.5);
+    }
+    else if (ship.moved == "MOVED") {
+        ship.is_selected = false;
+    }
+    ship.moved = "MOVING";
 }
 
 // Make the ship move
 function moveTo(pointer) {
     if (this.is_selected === true) {
-        legal_test = isLegal(this.x, this.y, pointer.x, pointer.y);
+        legal_test = isLegal(this, this.x, this.y, pointer.x, pointer.y);
         if(legal_test["legal_move"] === true){
             this.x = legal_test["x"];
             this.y = legal_test["y"];
             this.is_selected = false;
+            this.moved = "MOVED";
+            clearMoves(this);
+            MOVELOCK = false;
         }
-        clearMoves();
     }
 }
 
-function isLegal(from_x, from_y, to_x, to_y) {
+function isLegal(moving_ship, from_x, from_y, to_x, to_y) {
     // if another ship is there, don't move
     too_close = false;
     good_ships.forEach(function(ship) {
@@ -84,19 +120,19 @@ function isLegal(from_x, from_y, to_x, to_y) {
     }
     else if (to_y > (from_y + 32) && Math.abs(to_x - from_x) < 32) {
         // down
-        return {"legal_move": true, "x": moveDown.x, "y": moveDown.y };
+        return {"legal_move": true, "x": moving_ship.moveDown.x, "y": moving_ship.moveDown.y };
     }
     else if (to_y < (from_y - 32) && Math.abs(to_x - from_x) < 32) {
         // up
-        return {"legal_move": true, "x": moveUp.x, "y": moveUp.y };
+        return {"legal_move": true, "x": moving_ship.moveUp.x, "y": moving_ship.moveUp.y };
     }
     else if (to_x > (from_x + 32) && Math.abs(to_y - from_y) < 32) {
         // right
-        return {"legal_move": true, "x": moveRight.x, "y": moveRight.y };
+        return {"legal_move": true, "x": moving_ship.moveRight.x, "y": moving_ship.moveRight.y };
     }
     else if (to_x < (from_x - 32) && Math.abs(to_y - from_y) < 32) {
         // left
-        return {"legal_move": true, "x": moveLeft.x, "y": moveLeft.y };
+        return {"legal_move": true, "x": moving_ship.moveLeft.x, "y": moving_ship.moveLeft.y };
     }
     else
     {
@@ -105,25 +141,27 @@ function isLegal(from_x, from_y, to_x, to_y) {
     }
 }
 
-function clearMoves() {
-    moveLeft.destroy();
-    moveRight.destroy();
-    moveUp.destroy();
-    moveDown.destroy();
+function clearMoves(ship) {
+    ship.moveLeft.destroy();
+    ship.moveRight.destroy();
+    ship.moveUp.destroy();
+    ship.moveDown.destroy();
 }
 
 function spawnShips() {
     good_ships = game.add.group();
     good_ship1 = good_ships.create(32, 32, "battle_cruiser");
+    good_ship1.moved = "WAITING";
     good_ship1.inputEnabled = true;
     good_ship1.anchor.set(0.5);
-    good_ship1.events.onInputDown.add(selectShip, good_ship1);
+    //good_ship1.events.onInputDown.add(selectShip, good_ship1);
     game.input.onDown.add(moveTo, good_ship1);
 
     good_ship2 = good_ships.create(96, 96, "battleship");
+    good_ship2.moved = "WAITING";
     good_ship2.inputEnabled = true;
     good_ship2.anchor.set(0.5);
-    good_ship2.events.onInputDown.add(selectShip, good_ship2);
+    //good_ship2.events.onInputDown.add(selectShip, good_ship2);
     game.input.onDown.add(moveTo, good_ship2);
      
 
@@ -132,9 +170,10 @@ function spawnShips() {
     for (var i = 2; i < BOARD_COLS - 2; i++) {
          var bad_ship = bad_ships.create(i * SHIP_SIZE - 32,
              (BOARD_ROWS-2) * SHIP_SIZE - 32, "escort_frigate");
+         bad_ship.moved = "WAITING";
          bad_ship.inputEnabled = true;
          bad_ship.anchor.set(0.5);
-         bad_ship.events.onInputDown.add(selectShip, bad_ship);
+         //bad_ship.events.onInputDown.add(selectShip, bad_ship);
          game.input.onDown.add(moveTo, bad_ship);
     }
 }
