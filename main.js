@@ -24,21 +24,6 @@ function create() {
     	// Fuction called after 'preload' to setup the game    
         spawnShips();
 
-        // Display the ship on the screen
-        ship = game.add.sprite(128, 128, 'battleship');
-        // anchor ship to middle of image
-        ship.anchor.set(0.5);
-        // set is selected to false when we start the game
-        ship.is_selected = false;
-        
-        // create ship selector
-
-
-        // enable input actions for this image
-        ship.inputEnabled = true;
-        ship.events.onInputDown.add(selectShip, ship);
-        game.input.onDown.add(moveTo, ship);
-
 }
     
 function update() {
@@ -68,18 +53,50 @@ function moveTo(pointer) {
             this.x = legal_test["x"];
             this.y = legal_test["y"];
             this.is_selected = false;
-            clearMoves();
         }
+        clearMoves();
     }
 }
 
 function isLegal(from_x, from_y, to_x, to_y) {
-    if (Math.abs(from_x - to_x) > 96 || Math.abs(from_y - to_y) > 96) {
+    // if another ship is there, don't move
+    too_close = false;
+    good_ships.forEach(function(ship) {
+        if (Math.abs(to_x - ship.x) < 32 && Math.abs(to_y - ship.y) < 32) {
+            too_close = true;
+            //break;
+        }
+    });
+    // short circuit next loop if already an illegal move
+    bad_ships.forEach(function(ship) {
+        if (Math.abs(to_x - ship.x) < 32 && Math.abs(to_y - ship.y) < 32) {
+            too_close = true;
+            //break;
+        }
+    });
+
+    if (too_close === true) {
+        return { "legal_move": false, "x": from_x, "y": from_y };
+    }
+    // check to make sure the click was in a square
+    else if (Math.abs(from_x - to_x) > 96 || Math.abs(from_y - to_y) > 96) {
         return { "legal_move": false, "x": from_x, "y": from_y };
     }
     else if (to_y > (from_y + 32) && Math.abs(to_x - from_x) < 32) {
         // down
         return {"legal_move": true, "x": moveDown.x, "y": moveDown.y };
+    }
+    else if (to_y < (from_y - 32) && Math.abs(to_x - from_x) < 32) {
+        // up
+        return {"legal_move": true, "x": moveUp.x, "y": moveUp.y };
+    }
+    else if (to_x > (from_x + 32) && Math.abs(to_y - from_y) < 32) {
+        // right
+        return {"legal_move": true, "x": moveRight.x, "y": moveRight.y };
+    }
+    else if (to_x < (from_x - 32) && Math.abs(to_y - from_y) < 32) {
+        // left
+        return {"legal_move": true, "x": moveLeft.x, "y": moveLeft.y };
     }
     else
     {
@@ -97,7 +114,17 @@ function clearMoves() {
 
 function spawnShips() {
     good_ships = game.add.group();
-    good_ships.create(32, 32, "battle_cruiser");
+    good_ship1 = good_ships.create(32, 32, "battle_cruiser");
+    good_ship1.inputEnabled = true;
+    good_ship1.anchor.set(0.5);
+    good_ship1.events.onInputDown.add(selectShip, good_ship1);
+    game.input.onDown.add(moveTo, good_ship1);
+
+    good_ship2 = good_ships.create(96, 96, "battleship");
+    good_ship2.inputEnabled = true;
+    good_ship2.anchor.set(0.5);
+    good_ship2.events.onInputDown.add(selectShip, good_ship2);
+    game.input.onDown.add(moveTo, good_ship2);
      
 
 
