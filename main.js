@@ -66,6 +66,10 @@ function moveTo(pointer) {
         this.x = pointer.x;
         this.y = pointer.y;
         this.is_selected = false;
+        moveLeft.destroy();
+        moveRight.destroy();
+        moveUp.destroy();
+        moveDown.destroy();
     }
 }
 
@@ -80,6 +84,9 @@ function spawnShips() {
          var bad_ship = bad_ships.create(i * SHIP_SIZE,
              (BOARD_ROWS-2) * SHIP_SIZE, "escort_frigate");
          bad_ship.inputEnabled = true;
+         bad_ship.anchor.set(0.5);
+         bad_ship.events.onInputDown.add(selectShip, bad_ship);
+         game.input.onDown.add(moveTo, bad_ship);
     }
 }
 
