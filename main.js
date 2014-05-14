@@ -31,33 +31,57 @@ function create() {
 function update() {
     if (TURN == "PLAYER1") {
         // let player 1 move the good ships
-        while (waitingShips(good_ships)) {
             good_ships.forEach(function(ship) {
                 if (ship.moved == "MOVING")
                 {
                     MOVELOCK = true;
                 }
                 else if (ship.moved == "WAITING" && MOVELOCK === false){
+                    MOVELOCK = true;
                     selectShip(ship);
                 }
             });
+        if(moveDone(good_ships)) {
+            waitingShips(bad_ships);
+            TURN = "PLAYER2";
         }
+
     }
     else if (TURN == "PLAYER2") {
         // let player 2 (or A.I.?) move the bad ships
+            bad_ships.forEach(function(ship) {
+                if (ship.moved == "MOVING")
+                {
+                    MOVELOCK = true;
+                }
+                else if (ship.moved == "WAITING" && MOVELOCK === false){
+                    MOVELOCK = true;
+                    selectShip(ship);
+                }
+            });
+        if(moveDone(bad_ships)) {
+            waitingShips(good_ships);
+            TURN = "PLAYER1";
+        }
     }
 }
 
 function waitingShips(fleet) {
-    var waiting_ships = false;
     fleet.forEach(function(ship) {
-        if (ship.moved == "WAITING") {
-            waiting_ships = true;
-        }
+        ship.moved = "WAITING";
     });
-    return waiting_ships;
 }
 
+function moveDone(fleet) {
+    move_done = true;
+    fleet.forEach( function(ship) {
+        if(ship.moved != "MOVED")
+        {
+            move_done = false;
+        }
+    });
+    return move_done;
+}
 
 // select the ship to move
 function selectShip(ship) {
@@ -72,11 +96,11 @@ function selectShip(ship) {
         ship.moveUp.anchor.set(0.5);
         ship.moveDown = game.add.sprite(ship.x, ship.y + 64, 'move_tile');
         ship.moveDown.anchor.set(0.5);
+        ship.moved = "MOVING";
     }
     else if (ship.moved == "MOVED") {
         ship.is_selected = false;
     }
-    ship.moved = "MOVING";
 }
 
 // Make the ship move
