@@ -11,6 +11,12 @@
       margin: auto;
       margin-top: 50px;
     }
+    #command_div {
+      width: 640px;
+      margin: auto;
+      margin-top: 50px;
+    }
+
   </style>
 
   <script type="text/javascript" src="phaser.min.js"></script>
@@ -20,7 +26,9 @@
 <body>
 
   <div id="game_div"> </div>
-
+  <div id="command_div">
+    <button id="wait_command" type="button" onClick="wait()">Wait</button>
+  </div>
 </body>
 
 </html>

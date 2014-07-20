@@ -202,3 +202,21 @@ function spawnShips() {
     }
 }
 
+// functions for command buttons
+function wait() {
+    var fleet = good_ships;
+    if (TURN == "PLAYER2") {
+        fleet = bad_ships;
+    }
+
+    // find the ship that is currently moving
+    // set the ship to wait, destroy the move tiles, and clear the lock
+    fleet.forEach( function(ship) {
+        if (ship.moved == "MOVING") {
+            ship.moved = "MOVED";
+            clearMoves(ship);
+            MOVELOCK = false;
+        }
+    });
+
+}
